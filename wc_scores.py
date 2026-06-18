@@ -193,8 +193,13 @@ def parse_score_markets(raw_markets: list) -> list:
     return results
 
 
+MATCH_DURATION_MINS = 120  # max minutes a match can run (90 + extra time + penalties)
+
+
 def build_match_infos(events: list, now_utc: datetime, window_hours: float) -> list:
     deadline = now_utc + timedelta(hours=window_hours)
+    # Include games that kicked off up to MATCH_DURATION_MINS ago — they may still be live
+    earliest = now_utc - timedelta(minutes=MATCH_DURATION_MINS)
 
     exact_score_map: dict = {}
     plain_match_map: dict = {}
@@ -203,7 +208,7 @@ def build_match_infos(events: list, now_utc: datetime, window_hours: float) -> l
         end_dt = _parse_dt(event.get("endDate", ""))
         if end_dt is None:
             continue
-        if not (now_utc <= end_dt <= deadline):
+        if not (earliest <= end_dt <= deadline):
             continue
 
         title = event.get("title", "")
@@ -521,8 +526,10 @@ function fmtKickoff(isoStr) {
   });
 
   let countdown = '';
-  if (diffMs < 0) {
-    countdown = '<span class="countdown soon">In progress</span>';
+  if (diffMs < 0 && diffMs > -120 * 60000) {
+    countdown = '<span class="countdown soon">⚽ In progress</span>';
+  } else if (diffMs <= -120 * 60000) {
+    countdown = '<span class="countdown">Finished</span>';
   } else if (diffH < 1) {
     const m = Math.floor(diffMs / 60000);
     countdown = `<span class="countdown soon">in ${m}m</span>`;
