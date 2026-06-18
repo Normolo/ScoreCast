@@ -49,39 +49,6 @@ Open `http://<your-ip>:8081/` in a browser.
 | `--tag-id` | `102232` | Polymarket tag ID for World Cup events |
 | `--page-size` | `100` | API page size (pagination) |
 
----
-
-## Run on boot (systemd)
-
-```bash
-mkdir -p ~/.config/systemd/user
-
-cat > ~/.config/systemd/user/wc-scores.service << 'EOF'
-[Unit]
-Description=ScoreCast – Polymarket World Cup Dashboard
-After=network-online.target
-Wants=network-online.target
-
-[Service]
-ExecStart=/usr/bin/python3 /home/YOUR_USER/polyworldcup/wc_scores.py
-WorkingDirectory=/home/YOUR_USER/polyworldcup
-Restart=on-failure
-RestartSec=10
-
-[Install]
-WantedBy=default.target
-EOF
-
-systemctl --user enable --now wc-scores
-loginctl enable-linger YOUR_USER
-```
-
-Replace `YOUR_USER` with your username. `enable-linger` keeps the service alive after logout.
-
-To check logs:
-```bash
-journalctl --user -u wc-scores -f
-```
 
 ---
 
@@ -98,11 +65,6 @@ ScoreCast:
 
 ---
 
-## Tailscale setup
-
-The server binds to `0.0.0.0` by default, so it's accessible on your Tailscale IP immediately. No extra configuration needed. If you run another web app on the same host, use `--port` to pick a free port.
-
----
 
 ## License
 
